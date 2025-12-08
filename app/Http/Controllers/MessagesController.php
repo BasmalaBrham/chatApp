@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\MessageCreated;
 use Throwable;
 use App\Models\User;
 use App\Models\Recipient;
@@ -10,6 +11,7 @@ use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Broadcast;
 
 class MessagesController extends Controller
 {
@@ -18,9 +20,9 @@ class MessagesController extends Controller
      */
     public function index($id)
     {
-        $user = Auth::user();
+        $user = User::find(1);//Auth::user();
         $conversation = $user->conversations()->findOrFail($id);
-        return $conversation->messages()->paginate();
+        return $conversation->messages()->with('user')->latest()->paginate(20);
     }
 
     /**
@@ -41,9 +43,9 @@ class MessagesController extends Controller
                 }),
                 'int','exists:users,id']
         ]);
-        $user= User::find(1); //Auth::user()
-        $conversation_id=$request->post('conversation_id');
-        $user_id=$request->post('user_id');
+        $user= User::findOrFail(1);
+        $conversation_id = $request->integer('conversation_id');
+        $user_id = $request->integer('user_id');
 
         DB::beginTransaction();
         try {
@@ -94,6 +96,7 @@ class MessagesController extends Controller
                 'last_message_id'=>$message->id
             ]);
             DB::commit();
+            broadcast(new \App\Events\MessageCreated($message))->toOthers();
         }catch(Throwable $e){
             DB::rollBack();
             throw $e;
