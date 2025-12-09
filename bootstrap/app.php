@@ -12,8 +12,8 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withProviders([
-    \App\Providers\AppServiceProvider::class,
-    \App\Providers\BroadcastServiceProvider::class,
+        \App\Providers\AppServiceProvider::class,
+        \App\Providers\BroadcastServiceProvider::class,
     ])
     ->withMiddleware(function (Middleware $middleware): void {
         //

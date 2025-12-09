@@ -43,7 +43,7 @@ class MessagesController extends Controller
                 }),
                 'int','exists:users,id']
         ]);
-        $user= User::findOrFail(1);
+        $user= User::findOrFail(3);
         $conversation_id = $request->integer('conversation_id');
         $user_id = $request->integer('user_id');
 
